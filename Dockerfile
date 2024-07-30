@@ -26,6 +26,8 @@ FROM alpine:latest AS deploy
 
 WORKDIR /
 
+RUN apk --no-cache add tzdata
+
 RUN mkdir "./pb"
 
 COPY --from=builder /main ./pb/main/main
