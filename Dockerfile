@@ -17,7 +17,7 @@ RUN go install ./...
 
 RUN  go build -o /main ./main
 
-RUN mkdir /static
+RUN mkdir /pb_public
 
 RUN cp -r ./pb_public/* /pb_public/
 
@@ -29,7 +29,7 @@ WORKDIR /
 RUN mkdir "./pb"
 
 COPY --from=builder /main ./pb/main/main
-COPY --from=builder /static/ ./static/
+COPY --from=builder /pb_public/ ./pb_public/
 
 EXPOSE 8080
 CMD ["/pb/main/main", "serve", "--http=0.0.0.0:8080"]
