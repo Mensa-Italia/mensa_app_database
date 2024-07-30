@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
   mensa_app_server:
-    image: *tbd*
+    image: ghcr.io/sipioteo/mensa_app_database:main
     networks:
       - traefik
     volumes:
