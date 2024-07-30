@@ -6,6 +6,7 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+	"github.com/pocketbase/pocketbase/tools/cron"
 	"log"
 	_ "mensadb/migrations"
 	"os"
@@ -15,15 +16,27 @@ var app = pocketbase.New()
 
 func main() {
 
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		scheduler := cron.New()
+
+		// prints "Hello!" every 2 minutes
+		scheduler.MustAdd("hello", "1 3 * * *", updateAddonsData)
+
+		scheduler.Start()
+
+		return nil
+	})
+
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
 		Dir:         "./migrations",
 		Automigrate: true,
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.POST("/auth-with-area", AuthWithAreaHandler)
-		e.Router.POST("/sign-payload", SignPayloadHandler)
-		e.Router.GET("/keys/:addon", GetAddonPublicKeysHandler)
+		e.Router.POST("/api/cs/auth-with-area", AuthWithAreaHandler)
+		e.Router.POST("/api/cs/sign-payload", SignPayloadHandler)
+		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
+		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 		return nil
 	})
