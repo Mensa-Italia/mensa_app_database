@@ -1,4 +1,5 @@
 # Mensa app DB
+[![Build](https://github.com/Mensa-Italia/mensa_app_database/actions/workflows/main.yaml/badge.svg)](https://github.com/Mensa-Italia/mensa_app_database/actions/workflows/main.yaml)
 
 This is the base repository for the Mensa app database. It contains the database schema and the data for the Mensa app.
 
