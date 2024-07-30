@@ -20,7 +20,9 @@ func main() {
 		scheduler := cron.New()
 
 		// prints "Hello!" every 2 minutes
-		scheduler.MustAdd("hello", "1 3 * * *", updateAddonsData)
+		scheduler.MustAdd("hello", "1 3 * * *", func() {
+			go updateAddonsData()
+		})
 
 		scheduler.Start()
 

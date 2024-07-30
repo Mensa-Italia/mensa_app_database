@@ -7,9 +7,19 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/filesystem"
 	"github.com/tidwall/gjson"
+	"sync"
+	"time"
 )
 
+var lock sync.Mutex
+
 func updateAddonsData() {
+	successLock := lock.TryLock()
+	if !successLock { // not able to lock so is already running, abort this run
+		return
+	}
+	defer lock.Unlock()
+	time.Sleep(1 * time.Minute)
 	query := app.Dao().RecordQuery("addons")
 	records := []*models.Record{}
 	if err := query.All(&records); err != nil {
