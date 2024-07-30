@@ -1,7 +1,7 @@
 name: "Build"
 
 # This action must run on push
-on: [push]
+on: [workflow_dispatch]
 
 env:
   REGISTRY: ghcr.io
