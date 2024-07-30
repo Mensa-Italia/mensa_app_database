@@ -6,8 +6,8 @@ import (
 	"errors"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase/apis"
-	"github.com/tidwall/gjson"
 	"mensadb/tools/signatures"
+	"slices"
 	"time"
 )
 
@@ -18,24 +18,30 @@ func SignPayloadHandler(c echo.Context) error {
 		return apis.NewUnauthorizedError("Unauthorized", errors.New("Unauthorized"))
 	}
 
-	payloadRaw := c.FormValue("payload")
 	addonsId := c.FormValue("addon")
 
-	if payloadRaw == "" || !gjson.Valid(payloadRaw) {
-		return apis.NewBadRequestError("Payload is required", errors.New("Payload is required"))
+	user, err := app.Dao().FindRecordById("users", authUser.Id)
+	if err != nil {
+		return err
 	}
 
-	if gjson.Parse(payloadRaw).Get("email").String() != authUser.Email {
-		return apis.NewBadRequestError("Invalid payload", errors.New("Invalid payload"))
+	payloadJSON := map[string]interface{}{
+		"id":                user.Get("id"),
+		"email":             user.Get("email"),
+		"name":              user.Get("name"),
+		"avatar":            "https://svc.mensa.it/api/files/_pb_users_auth_/" + user.Get("id").(string) + "/" + user.Get("avatar").(string),
+		"powers":            user.Get("powers"),
+		"expire_membership": user.Get("expire_membership"),
+		"signed_at":         time.Now().Format(time.RFC3339),
 	}
 
-	var payloadJSON map[string]interface{}
-
-	_ = json.Unmarshal([]byte(payloadRaw), &payloadJSON)
-
-	payloadJSON["id"] = authUser.Id
-	payloadJSON["email"] = authUser.Email
-	payloadJSON["signature_time"] = time.Now().Format(time.RFC3339)
+	if !slices.Contains(user.GetStringSlice("addons"), addonsId) {
+		user.Set("addons", append(user.GetStringSlice("addons"), addonsId))
+		err = app.Dao().Save(user)
+		if err != nil {
+			return err
+		}
+	}
 
 	payload, _ := json.Marshal(payloadJSON)
 

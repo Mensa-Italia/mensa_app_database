@@ -16,13 +16,13 @@ func isLoggedIn(c echo.Context) (bool, *AuthData) {
 	admin := info.Admin
 	record := info.AuthRecord
 
-	if admin != nil {
-		return true, &AuthData{Email: admin.Email, Id: admin.Id, IsAdmin: true}
-	}
-
 	if record != nil {
 		return true, &AuthData{Email: record.Email(), Id: record.Id, IsAdmin: false}
 	}
 
-	return true, &AuthData{Email: "matteo@sipio.it", Id: "kxlyn3pkscp4yhz", IsAdmin: false}
+	if admin != nil {
+		return false, nil
+	}
+
+	return false, nil
 }
