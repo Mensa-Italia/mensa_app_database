@@ -9,6 +9,7 @@ import (
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"log"
 	_ "mensadb/migrations"
+	"mensadb/tools/signatures"
 	"os"
 )
 
@@ -36,10 +37,12 @@ func main() {
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.POST("/api/cs/auth-with-area", AuthWithAreaHandler)
-		e.Router.POST("/api/cs/sign-payload", SignPayloadHandler)
+		e.Router.GET("/api/cs/sign-payload/:addon", SignPayloadHandler)
 		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
+		e.Router.POST("/api/cs/verify-signature/:addon", VerifySignatureHandler)
 		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
+
 		return nil
 	})
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
@@ -56,4 +59,23 @@ func GetAddonPublicKeysHandler(c echo.Context) error {
 	}
 
 	return c.String(200, record.Get("public_key").(string))
+}
+
+func VerifySignatureHandler(c echo.Context) error {
+	addonId := c.PathParam("addon")
+	signature := c.FormValue("signature")
+	payload := c.FormValue("payload")
+
+	record, err := app.Dao().FindRecordById("addons", addonId)
+	if err != nil {
+		return apis.NewBadRequestError("Invalid addon", err)
+	}
+
+	isValid := signatures.ValidateSignature(payload, signature, record.Get("public_key").(string))
+
+	if !isValid {
+		return apis.NewBadRequestError("Invalid signature", nil)
+	}
+
+	return c.String(200, "OK")
 }

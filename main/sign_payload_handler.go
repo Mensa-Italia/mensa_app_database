@@ -18,7 +18,7 @@ func SignPayloadHandler(c echo.Context) error {
 		return apis.NewUnauthorizedError("Unauthorized", errors.New("Unauthorized"))
 	}
 
-	addonsId := c.FormValue("addon")
+	addonsId := c.PathParam("addon")
 
 	user, err := app.Dao().FindRecordById("users", authUser.Id)
 	if err != nil {
