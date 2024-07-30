@@ -7,6 +7,9 @@ services:
       - traefik
     volumes:
       - mensa_app_server_storage:/pb/main/pb_data/
+    environment:
+      - PASSWORD_UUID=${PASSWORD_UUID}
+      - PASSWORD_SALT=${PASSWORD_SALT}
     deploy:
       replicas: 1
       labels:
