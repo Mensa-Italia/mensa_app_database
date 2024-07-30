@@ -1,6 +1,5 @@
 name: "Build"
 
-# This action must run on push
 on: [workflow_dispatch]
 
 env:
