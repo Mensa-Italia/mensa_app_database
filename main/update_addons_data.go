@@ -19,7 +19,9 @@ func updateAddonsData() {
 		return
 	}
 	defer lock.Unlock()
+	app.Logger().Info("Updating addons data, this may take a while. Waiting 1 minute before starting for security reasons.")
 	time.Sleep(1 * time.Minute)
+	app.Logger().Info("Starting to update addons data.")
 	query := app.Dao().RecordQuery("addons")
 	records := []*models.Record{}
 	if err := query.All(&records); err != nil {
