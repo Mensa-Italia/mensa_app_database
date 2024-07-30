@@ -1,6 +1,6 @@
 name: "Build"
 
-on: [push]
+on: [workflow_dispatch]
 
 env:
   REGISTRY: ghcr.io
@@ -38,7 +38,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Push on docker
-        run: docker push mensaitalia/mensa_app_database:main
-
-
+        
