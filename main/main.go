@@ -5,13 +5,20 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"log"
+	_ "mensadb/migrations"
 	"os"
 )
 
 var app = pocketbase.New()
 
 func main() {
+
+	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
+		Dir:         "./migrations",
+		Automigrate: false,
+	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.POST("/auth-with-area", AuthWithAreaHandler)
@@ -21,7 +28,6 @@ func main() {
 		return nil
 	})
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
-
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
