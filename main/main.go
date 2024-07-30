@@ -17,7 +17,7 @@ func main() {
 
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
 		Dir:         "./migrations",
-		Automigrate: false,
+		Automigrate: true,
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
