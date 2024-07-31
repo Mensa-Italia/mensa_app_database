@@ -10,10 +10,11 @@ import (
 )
 
 type Area32User struct {
-	Id         string
-	ImageUrl   string
-	Fullname   string
-	ExpireDate time.Time
+	Id                 string
+	ImageUrl           string
+	Fullname           string
+	ExpireDate         time.Time
+	IsMembershipActive bool
 }
 
 func (u *Area32User) IsExpired() bool {
@@ -79,14 +80,16 @@ func (api *ScraperApi) DoLoginAndRetrieveMain(email, password string) (*Area32Us
 	userId := retrieveID(doc)
 	expireDate := retrieveExpireDate(doc)
 	fullName := retrieveFullName(doc)
+	isMembershipActive := checkIsMembershipActive(doc)
 	if userId == "" {
 		return nil, errors.New("Invalid credentials")
 	}
 	return &Area32User{
-		Id:         userId,
-		ImageUrl:   imageUrl,
-		ExpireDate: expireDate,
-		Fullname:   fullName,
+		Id:                 userId,
+		ImageUrl:           imageUrl,
+		ExpireDate:         expireDate,
+		Fullname:           fullName,
+		IsMembershipActive: isMembershipActive,
 	}, nil
 }
 
@@ -153,4 +156,16 @@ func retrieveFullName(doc *goquery.Document) string {
 		}
 	})
 	return fullName
+}
+
+func checkIsMembershipActive(doc *goquery.Document) bool {
+	res := false
+	doc.Find("li").Each(func(i int, s *goquery.Selection) {
+		s.Find("a").Each(func(i int, s *goquery.Selection) {
+			if strings.Contains(strings.ToLower(s.Text()), "registro soci") {
+				res = true
+			}
+		})
+	})
+	return res
 }

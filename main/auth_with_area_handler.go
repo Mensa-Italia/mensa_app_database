@@ -38,6 +38,7 @@ func AuthWithAreaHandler(c echo.Context) error {
 		newUser.SetVerified(true)
 		newUser.Set("name", areaUser.Fullname)
 		newUser.Set("expire_membership", areaUser.ExpireDate)
+		newUser.Set("is_membership_active", areaUser.IsMembershipActive)
 
 		if err := app.Dao().SaveRecord(newUser); err != nil {
 			return apis.NewBadRequestError("Invalid credentials", err)
@@ -54,6 +55,7 @@ func AuthWithAreaHandler(c echo.Context) error {
 		byUser.SetVerified(true)
 		byUser.Set("name", areaUser.Fullname)
 		byUser.Set("expire_membership", areaUser.ExpireDate)
+		byUser.Set("is_membership_active", areaUser.IsMembershipActive)
 
 		if err := app.Dao().Save(byUser); err != nil {
 			return apis.NewBadRequestError("Invalid credentials", err)
