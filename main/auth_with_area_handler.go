@@ -12,6 +12,7 @@ import (
 	"github.com/pocketbase/pocketbase/tools/filesystem"
 	"mensadb/area32"
 	"mensadb/tools/env"
+	"slices"
 	"strings"
 )
 
@@ -39,6 +40,9 @@ func AuthWithAreaHandler(c echo.Context) error {
 		newUser.Set("name", areaUser.Fullname)
 		newUser.Set("expire_membership", areaUser.ExpireDate)
 		newUser.Set("is_membership_active", areaUser.IsMembershipActive)
+		if areaUser.IsATestMaker {
+			newUser.Set("powers", []string{"tentmakers"})
+		}
 
 		if err := app.Dao().SaveRecord(newUser); err != nil {
 			return apis.NewBadRequestError("Invalid credentials", err)
@@ -56,6 +60,15 @@ func AuthWithAreaHandler(c echo.Context) error {
 		byUser.Set("name", areaUser.Fullname)
 		byUser.Set("expire_membership", areaUser.ExpireDate)
 		byUser.Set("is_membership_active", areaUser.IsMembershipActive)
+
+		powers := byUser.GetStringSlice("powers")
+		if areaUser.IsATestMaker && !slices.Contains(powers, "tentmakers") {
+			powers = append(powers, "tentmakers")
+			byUser.Set("powers", powers)
+		} else if !areaUser.IsATestMaker && slices.Contains(powers, "tentmakers") {
+			powers = removeFromSlice(powers, "tentmakers")
+			byUser.Set("powers", powers)
+		}
 
 		if err := app.Dao().Save(byUser); err != nil {
 			return apis.NewBadRequestError("Invalid credentials", err)
@@ -75,4 +88,10 @@ func generatePassword(id string) string {
 	pass := crypto.SHA256.New()
 	pass.Write([]byte(id + uuid.NewMD5(uuid.MustParse(env.GetPasswordUUID()), []byte(id)).String() + env.GetPasswordSalt()))
 	return hex.EncodeToString(pass.Sum(nil))
+}
+
+func removeFromSlice(slice []string, element string) []string {
+	i := slices.Index(slice, element)
+	slice[i] = slice[len(slice)-1]
+	return slice[:len(slice)-1]
 }

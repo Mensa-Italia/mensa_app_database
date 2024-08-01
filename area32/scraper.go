@@ -15,6 +15,7 @@ type Area32User struct {
 	Fullname           string
 	ExpireDate         time.Time
 	IsMembershipActive bool
+	IsATestMaker       bool
 }
 
 func (u *Area32User) IsExpired() bool {
@@ -81,6 +82,7 @@ func (api *ScraperApi) DoLoginAndRetrieveMain(email, password string) (*Area32Us
 	expireDate := retrieveExpireDate(doc)
 	fullName := retrieveFullName(doc)
 	isMembershipActive := checkIsMembershipActive(doc)
+	isTestMaker := checkIsTestMaker(doc)
 	if userId == "" {
 		return nil, errors.New("Invalid credentials")
 	}
@@ -90,6 +92,7 @@ func (api *ScraperApi) DoLoginAndRetrieveMain(email, password string) (*Area32Us
 		ExpireDate:         expireDate,
 		Fullname:           fullName,
 		IsMembershipActive: isMembershipActive,
+		IsATestMaker:       isTestMaker,
 	}, nil
 }
 
@@ -163,6 +166,18 @@ func checkIsMembershipActive(doc *goquery.Document) bool {
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		s.Find("a").Each(func(i int, s *goquery.Selection) {
 			if strings.Contains(strings.ToLower(s.Text()), "registro soci") {
+				res = true
+			}
+		})
+	})
+	return res
+}
+
+func checkIsTestMaker(doc *goquery.Document) bool {
+	res := false
+	doc.Find("li").Each(func(i int, s *goquery.Selection) {
+		s.Find("a").Each(func(i int, s *goquery.Selection) {
+			if strings.Contains(strings.ToLower(s.Text()), "test") {
 				res = true
 			}
 		})
