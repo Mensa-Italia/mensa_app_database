@@ -41,7 +41,7 @@ func AuthWithAreaHandler(c echo.Context) error {
 		newUser.Set("expire_membership", areaUser.ExpireDate)
 		newUser.Set("is_membership_active", areaUser.IsMembershipActive)
 		if areaUser.IsATestMaker {
-			newUser.Set("powers", []string{"tentmakers"})
+			newUser.Set("powers", []string{"testmakers"})
 		}
 
 		if err := app.Dao().SaveRecord(newUser); err != nil {
@@ -62,11 +62,11 @@ func AuthWithAreaHandler(c echo.Context) error {
 		byUser.Set("is_membership_active", areaUser.IsMembershipActive)
 
 		powers := byUser.GetStringSlice("powers")
-		if areaUser.IsATestMaker && !slices.Contains(powers, "tentmakers") {
-			powers = append(powers, "tentmakers")
+		if areaUser.IsATestMaker && !slices.Contains(powers, "testmakers") {
+			powers = append(powers, "testmakers")
 			byUser.Set("powers", powers)
-		} else if !areaUser.IsATestMaker && slices.Contains(powers, "tentmakers") {
-			powers = removeFromSlice(powers, "tentmakers")
+		} else if !areaUser.IsATestMaker && slices.Contains(powers, "testmakers") {
+			powers = removeFromSlice(powers, "testmakers")
 			byUser.Set("powers", powers)
 		}
 
