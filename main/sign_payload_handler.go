@@ -32,7 +32,9 @@ func SignPayloadHandler(c echo.Context) error {
 		"avatar":            "https://svc.mensa.it/api/files/_pb_users_auth_/" + user.Get("id").(string) + "/" + user.Get("avatar").(string),
 		"powers":            user.Get("powers"),
 		"expire_membership": user.Get("expire_membership"),
+		"addon_id":          addonsId,
 		"signed_at":         time.Now().Format(time.RFC3339),
+		"expires_at":        time.Now().Add(time.Minute * 5).Format(time.RFC3339),
 	}
 
 	if !slices.Contains(user.GetStringSlice("addons"), addonsId) {
@@ -65,4 +67,13 @@ func SignPayloadHandler(c echo.Context) error {
 
 func payloadToBase64(payload string) string {
 	return base64.RawURLEncoding.EncodeToString([]byte(payload))
+}
+
+func payloadFromBase64(payload string) string {
+	decoded, err := base64.RawURLEncoding.DecodeString(payload)
+	if err != nil {
+		return ""
+	}
+
+	return string(decoded)
 }
