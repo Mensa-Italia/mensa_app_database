@@ -22,8 +22,8 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		// prints "Hello!" every 2 minutes
-		scheduler.MustAdd("hello", "1 3 * * *", func() {
+		// Update addons data every day at 3:01
+		scheduler.MustAdd("updateAddonsData", "1 3 * * *", func() {
 			go updateAddonsData()
 		})
 
@@ -48,6 +48,7 @@ func main() {
 		return nil
 	})
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
+	app.OnRecordAfterCreateRequest("positions").Add(PositionSetState)
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
