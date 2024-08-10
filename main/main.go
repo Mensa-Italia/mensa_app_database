@@ -5,6 +5,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/tidwall/gjson"
@@ -38,17 +39,39 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+
 		e.Router.POST("/api/cs/auth-with-area", AuthWithAreaHandler)
 		e.Router.GET("/api/cs/sign-payload/:addon", SignPayloadHandler)
 		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
 		e.Router.POST("/api/cs/verify-signature/:addon", VerifySignatureHandler)
 		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
+		e.Router.GET("/ical/:hash", RetrieveICAL)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 
 		return nil
 	})
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
 	app.OnRecordAfterCreateRequest("positions").Add(PositionSetState)
+	app.OnRecordAfterCreateRequest("calendar_link").Add(CalendarSetHash)
+
+	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
+
+		expr, err := app.Dao().FindRecordsByExpr("users")
+		if err != nil {
+			return err
+		}
+
+		for _, record := range expr {
+
+			calendarLinkCollection, _ := app.Dao().FindCollectionByNameOrId("calendar_link")
+			newCalendar := models.NewRecord(calendarLinkCollection)
+			newCalendar.Set("user", record.Id)
+			newCalendar.Set("hash", randomHash())
+			app.Dao().SaveRecord(newCalendar)
+		}
+		return nil
+
+	})
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}

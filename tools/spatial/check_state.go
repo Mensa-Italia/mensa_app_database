@@ -43,7 +43,6 @@ func LoadState(lat, lon float64) string {
 
 }
 
-// Piemonte,Valle d'Aosta,Lombardia,Trentino-Alto Adige,Veneto,Friuli-Venezia Giulia,Liguria,Emilia-Romagna,Toscana,Umbria,Marche,Lazio,Abruzzo,Molise,Campania,Puglia,Basilicata,Calabria,Sicilia,Sardegna
 func IntToName(val int) string {
 	switch val {
 	case 1:

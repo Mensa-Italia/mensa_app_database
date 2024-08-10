@@ -53,6 +53,12 @@ func AuthWithAreaHandler(c echo.Context) error {
 			form.AddFiles("avatar", fileImage)
 			_ = form.Submit()
 		}
+
+		calendarLinkCollection, _ := app.Dao().FindCollectionByNameOrId("calendar_link")
+		newCalendar := models.NewRecord(calendarLinkCollection)
+		newCalendar.Set("user", areaUser.Id)
+		app.Dao().SaveRecord(newCalendar)
+
 		return apis.RecordAuthResponse(app, c, newUser, nil)
 	} else {
 		byUser.SetEmail(email)
