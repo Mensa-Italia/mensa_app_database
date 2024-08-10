@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/tools/types"
+	"time"
 )
 
 type IcalEvents struct {
@@ -30,9 +31,30 @@ func RetrieveICAL(c echo.Context) error {
 	resultCalendarStates, _ := app.Dao().FindRecordsByExpr("calendar_link", dbx.NewExp("hash = {:user}", dbx.Params{
 		"user": hashCode,
 	}))
-
 	if len(resultCalendarStates) == 0 {
 		return c.String(404, "Calendar not found")
+	}
+
+	resultUsers, _ := app.Dao().FindRecordsByExpr("users", dbx.NewExp("id = {:user}", dbx.Params{
+		"user": resultCalendarStates[0].GetString("user"),
+	}))
+	if len(resultUsers) == 0 {
+		return c.String(404, "User not found")
+	}
+
+	cal := ics.NewCalendar()
+	cal.SetMethod(ics.MethodRequest)
+	if !resultUsers[0].GetBool("is_membership_active") || resultUsers[0].GetDateTime("expire_membership").Time().Before(time.Now()) {
+		event := cal.AddEvent("RENEW_MEMBERSHIP@svc.mensa.it")
+		event.SetCreatedTime(time.Now())
+		event.SetDtStampTime(time.Now())
+		event.SetModifiedAt(time.Now())
+		event.SetStartAt(time.Now().Add(time.Hour * 24))
+		event.SetEndAt(time.Now().Add((time.Hour * 24) + (time.Hour * 1)))
+		event.SetDescription("Rinnova la tua iscrizione a Mensa Italia")
+		event.SetSummary("Rinnova la tua iscrizione a Mensa Italia!")
+		event.SetURL("https://www.cloud32.it/Associazioni/utenti/rinnovo")
+		event.SetOrganizer("tesoreria@mensa.it")
 	}
 
 	var calendarStates = []interface{}{}
@@ -41,8 +63,6 @@ func RetrieveICAL(c echo.Context) error {
 		calendarStates = append(calendarStates, data)
 	}
 
-	cal := ics.NewCalendar()
-	cal.SetMethod(ics.MethodRequest)
 	query := app.Dao().DB().Select(
 		"events.id as id",
 		"events.name as name",
@@ -68,7 +88,7 @@ func RetrieveICAL(c echo.Context) error {
 	}
 
 	for _, record := range records {
-		event := cal.AddEvent(record.Id)
+		event := cal.AddEvent(record.Id + "@svc.mensa.it")
 		event.SetCreatedTime(record.Created.Time())
 		event.SetDtStampTime(record.Created.Time())
 		event.SetModifiedAt(record.Updated.Time())
@@ -78,14 +98,12 @@ func RetrieveICAL(c echo.Context) error {
 		event.SetSummary(record.Name)
 		event.SetLocation(record.Location)
 		event.SetGeo(record.Lat, record.Lon)
-		event.SetDescription(record.Description)
 		if record.InfoLink != "" {
 			event.SetURL(record.InfoLink)
 		}
 		event.SetOrganizer(record.OrganizerEmail)
-
-		c.Response().Header().Set("Content-Type", "text/calendar")
 	}
+	c.Response().Header().Set("Content-Type", "text/calendar")
 	return c.String(200, cal.Serialize())
 
 }
