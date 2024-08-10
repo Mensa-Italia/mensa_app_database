@@ -60,7 +60,7 @@ func RetrieveICAL(c echo.Context) error {
 		"positions.lon as lon",
 		"users.email as organizer_email",
 	).From("events").InnerJoin("positions", dbx.NewExp("events.position = positions.id")).InnerJoin("users", dbx.NewExp("events.owner = users.id")).Where(
-		dbx.In("positions.state", calendarStates...))
+		dbx.Or(dbx.In("positions.state", calendarStates...), dbx.HashExp{"is_national": true}))
 
 	var records []IcalEvents
 	if err := query.All(&records); err != nil {
