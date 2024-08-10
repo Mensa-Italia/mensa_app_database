@@ -45,6 +45,7 @@ func main() {
 		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
 		e.Router.POST("/api/cs/verify-signature/:addon", VerifySignatureHandler)
 		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
+		e.Router.GET("/api/cs/generate-missing-cal-user", GenerateMissingCalUserHandler)
 		e.Router.GET("/ical/:hash", RetrieveICAL)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 
@@ -53,31 +54,6 @@ func main() {
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
 	app.OnRecordAfterCreateRequest("positions").Add(PositionSetState)
 	app.OnRecordAfterCreateRequest("calendar_link").Add(CalendarSetHash)
-
-	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
-
-		expr, err := app.Dao().FindRecordsByExpr("users")
-		if err != nil {
-			return nil
-		}
-
-		if len(expr) == 0 {
-			return nil
-		}
-		for _, record := range expr {
-			if record == nil {
-				continue
-			}
-
-			calendarLinkCollection, _ := app.Dao().FindCollectionByNameOrId("calendar_link")
-			newCalendar := models.NewRecord(calendarLinkCollection)
-			newCalendar.Set("user", record.Id)
-			newCalendar.Set("hash", randomHash())
-			app.Dao().SaveRecord(newCalendar)
-		}
-		return nil
-
-	})
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
@@ -120,4 +96,27 @@ func VerifySignatureHandler(c echo.Context) error {
 	}
 	return apis.NewBadRequestError("Invalid signature", nil)
 
+}
+
+func GenerateMissingCalUserHandler(c echo.Context) error {
+	expr, err := app.Dao().FindRecordsByExpr("users")
+	if err != nil {
+		return err
+	}
+
+	if len(expr) == 0 {
+		return nil
+	}
+	for _, record := range expr {
+		if record == nil {
+			continue
+		}
+
+		calendarLinkCollection, _ := app.Dao().FindCollectionByNameOrId("calendar_link")
+		newCalendar := models.NewRecord(calendarLinkCollection)
+		newCalendar.Set("user", record.Id)
+		newCalendar.Set("hash", randomHash())
+		app.Dao().SaveRecord(newCalendar)
+	}
+	return nil
 }
