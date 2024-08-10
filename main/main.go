@@ -58,10 +58,16 @@ func main() {
 
 		expr, err := app.Dao().FindRecordsByExpr("users")
 		if err != nil {
-			return err
+			return nil
 		}
 
+		if len(expr) == 0 {
+			return nil
+		}
 		for _, record := range expr {
+			if record == nil {
+				continue
+			}
 
 			calendarLinkCollection, _ := app.Dao().FindCollectionByNameOrId("calendar_link")
 			newCalendar := models.NewRecord(calendarLinkCollection)
