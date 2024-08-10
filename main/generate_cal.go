@@ -55,6 +55,8 @@ func RetrieveICAL(c echo.Context) error {
 		event.SetSummary("Rinnova la tua iscrizione a Mensa Italia!")
 		event.SetURL("https://www.cloud32.it/Associazioni/utenti/rinnovo")
 		event.SetOrganizer("tesoreria@mensa.it")
+		c.Response().Header().Set("Content-Type", "text/calendar")
+		return c.String(200, cal.Serialize())
 	}
 
 	var calendarStates = []interface{}{}
