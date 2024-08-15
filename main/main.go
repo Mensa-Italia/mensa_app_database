@@ -22,8 +22,8 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
-		// prints "Hello!" every 2 minutes
-		scheduler.MustAdd("hello", "1 3 * * *", func() {
+		// Update addons data every day at 3:01
+		scheduler.MustAdd("updateAddonsData", "1 3 * * *", func() {
 			go updateAddonsData()
 		})
 
@@ -38,16 +38,20 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+
 		e.Router.POST("/api/cs/auth-with-area", AuthWithAreaHandler)
 		e.Router.GET("/api/cs/sign-payload/:addon", SignPayloadHandler)
 		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
 		e.Router.POST("/api/cs/verify-signature/:addon", VerifySignatureHandler)
 		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
+		e.Router.GET("/ical/:hash", RetrieveICAL)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 
 		return nil
 	})
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
+	app.OnRecordAfterCreateRequest("positions").Add(PositionSetState)
+	app.OnRecordAfterCreateRequest("calendar_link").Add(CalendarSetHash)
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
