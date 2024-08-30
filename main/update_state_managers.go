@@ -28,8 +28,10 @@ func updateStateManagers() {
 		print(record.GetString("email"))
 		powers := record.GetStringSlice("powers")
 		newPowers := []string{}
+		hadEventsPower := false
 		for _, power := range powers {
 			if power == "events" {
+				hadEventsPower = true
 				continue
 			}
 			newPowers = append(newPowers, power)
@@ -37,7 +39,9 @@ func updateStateManagers() {
 		if slices.Contains(segretari, record.GetString("email")) {
 			newPowers = append(newPowers, "events")
 		}
-		record.Set("powers", newPowers)
-		_ = app.Dao().Save(record)
+		if slices.Contains(segretari, record.GetString("email")) || hadEventsPower {
+			record.Set("powers", newPowers)
+			_ = app.Dao().Save(record)
+		}
 	}
 }
