@@ -19,6 +19,7 @@ import (
 var app = pocketbase.New()
 
 func main() {
+	importers.GetFullMailList()
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
