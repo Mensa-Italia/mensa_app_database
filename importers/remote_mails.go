@@ -3,7 +3,6 @@ package importers
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"log"
 	"mensadb/tools/env"
@@ -63,14 +62,9 @@ func GetFullMailList() {
 	defer resp.Body.Close()
 
 	xmlResult, err := io.ReadAll(resp.Body)
-	// fmt.Println( xmlResult  )
 	var container Container
 	_ = xml.Unmarshal([]byte(xmlResult), &container)
-
-	fmt.Println("STRUCT", container)
 	bt, _ := json.Marshal(container)
-
-	fmt.Println("json str", string(bt))
 
 	//store into file
 	os.WriteFile("mails.json", bt, 0644)

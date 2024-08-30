@@ -42,7 +42,6 @@ func (api *ScraperApi) DoLoginAndRetrieveMain(email, password string) (*Area32Us
 	doc, err := goquery.NewDocumentFromReader(resp.RawBody())
 
 	if err != nil {
-		print("2")
 		return nil, err
 	}
 
@@ -68,7 +67,6 @@ func (api *ScraperApi) DoLoginAndRetrieveMain(email, password string) (*Area32Us
 	resp, err = api.client.R().
 		Get("https://www.cloud32.it/Associazioni/utenti/home")
 	if err != nil {
-		print("4")
 		return nil, err
 	}
 

@@ -96,8 +96,8 @@ func RetrieveICAL(c echo.Context) error {
 		event.SetModifiedAt(record.Updated.Time())
 		event.SetStartAt(record.WhenStart.Time())
 		event.SetEndAt(record.WhenEnd.Time())
-		event.SetDescription(record.Description)
 		event.SetSummary(record.Name)
+		event.SetDescription(record.Description)
 		event.SetLocation(record.Location)
 		event.SetGeo(record.Lat, record.Lon)
 		if record.InfoLink != "" {

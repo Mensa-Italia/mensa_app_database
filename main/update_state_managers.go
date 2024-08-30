@@ -24,8 +24,6 @@ func updateStateManagers() {
 	}
 	segretari := importers.RetrieveForwardedMail("segretari")
 	for _, record := range records {
-
-		print(record.GetString("email"))
 		powers := record.GetStringSlice("powers")
 		newPowers := []string{}
 		hadEventsPower := false
