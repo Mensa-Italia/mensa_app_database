@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/tools/types"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,6 +25,12 @@ type IcalEvents struct {
 	Owner          string         `json:"owner"`
 	OrganizerEmail string         `json:"organizer_email"`
 	InfoLink       string         `json:"info_link"`
+}
+
+func (i *IcalEvents) GetSixDigitPrecisionLatLon() (string, string) {
+	flat, _ := strconv.ParseFloat(i.Lat, 64)
+	flon, _ := strconv.ParseFloat(i.Lon, 64)
+	return strconv.FormatFloat(flat, 'f', 6, 64), strconv.FormatFloat(flon, 'f', 6, 64)
 }
 
 func RetrieveICAL(c echo.Context) error {
@@ -100,7 +107,8 @@ func RetrieveICAL(c echo.Context) error {
 		event.SetSummary(record.Name)
 		event.SetDescription(strings.ReplaceAll(record.Description, "\r", " "))
 		event.SetLocation(record.Location)
-		event.SetGeo(record.Lat, record.Lon)
+		lat, lon := record.GetSixDigitPrecisionLatLon()
+		event.SetGeo(lat, lon)
 		if record.InfoLink != "" {
 			event.SetURL(record.InfoLink)
 		}
