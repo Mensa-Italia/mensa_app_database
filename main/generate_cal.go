@@ -98,7 +98,7 @@ func RetrieveICAL(c echo.Context) error {
 		event.SetStartAt(record.WhenStart.Time())
 		event.SetEndAt(record.WhenEnd.Time())
 		event.SetSummary(record.Name)
-		event.SetDescription(strings.ReplaceAll(record.Description, "\n", " "))
+		event.SetDescription(strings.ReplaceAll(record.Description, "\r", " "))
 		event.SetLocation(record.Location)
 		event.SetGeo(record.Lat, record.Lon)
 		if record.InfoLink != "" {
