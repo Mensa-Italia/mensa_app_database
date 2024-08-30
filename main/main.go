@@ -9,6 +9,7 @@ import (
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/tidwall/gjson"
 	"log"
+	"mensadb/importers"
 	_ "mensadb/migrations"
 	"mensadb/tools/signatures"
 	"os"
@@ -18,13 +19,16 @@ import (
 var app = pocketbase.New()
 
 func main() {
-
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 
 		// Update addons data every day at 3:01
 		scheduler.MustAdd("updateAddonsData", "1 3 * * *", func() {
 			go updateAddonsData()
+			go func() {
+				importers.GetFullMailList()
+				updateStateManagers()
+			}()
 		})
 
 		scheduler.Start()
@@ -44,6 +48,7 @@ func main() {
 		e.Router.GET("/api/cs/keys/:addon", GetAddonPublicKeysHandler)
 		e.Router.POST("/api/cs/verify-signature/:addon", VerifySignatureHandler)
 		e.Router.GET("/api/cs/force-update-addons", ForceUpdateAddonsHandler)
+		e.Router.GET("/api/cs/force-update-state-managers", ForceUpdateStateManagersHandler)
 		e.Router.GET("/ical/:hash", RetrieveICAL)
 		e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 

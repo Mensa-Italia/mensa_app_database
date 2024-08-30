@@ -6,8 +6,9 @@ import (
 )
 
 type config struct {
-	PasswordUUID string `env:"PASSWORD_UUID" envDefault:"474a6581-7b01-4752-ab42-4f6539efabfe"`
-	PasswordSalt string `env:"PASSWORD_SALT" envDefault:"PROVA"`
+	PasswordUUID          string `env:"PASSWORD_UUID" envDefault:"474a6581-7b01-4752-ab42-4f6539efabfe"`
+	PasswordSalt          string `env:"PASSWORD_SALT" envDefault:"PROVA"`
+	EmailProviderPassword string `env:"EMAIL_PROVIDER_PASSWORD" envDefault:""`
 }
 
 var cfg = config{}
@@ -24,4 +25,8 @@ func GetPasswordUUID() string {
 
 func GetPasswordSalt() string {
 	return cfg.PasswordSalt
+}
+
+func GetEmailProviderPassword() string {
+	return cfg.EmailProviderPassword
 }

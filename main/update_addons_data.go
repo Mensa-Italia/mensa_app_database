@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-var lock sync.Mutex
+var lockAddonsData sync.Mutex
 
 func updateAddonsData() {
-	successLock := lock.TryLock()
+	successLock := lockAddonsData.TryLock()
 	if !successLock { // not able to lock so is already running, abort this run
 		return
 	}
-	defer lock.Unlock()
+	defer lockAddonsData.Unlock()
 	app.Logger().Info("Updating addons data, this may take a while. Waiting 1 minute before starting for security reasons.")
 	time.Sleep(1 * time.Minute)
 	app.Logger().Info("Starting to update addons data.")

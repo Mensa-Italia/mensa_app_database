@@ -11,6 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/filesystem"
 	"mensadb/area32"
+	"mensadb/importers"
 	"mensadb/tools/env"
 	"slices"
 	"strings"
@@ -40,8 +41,16 @@ func AuthWithAreaHandler(c echo.Context) error {
 		newUser.Set("name", areaUser.Fullname)
 		newUser.Set("expire_membership", areaUser.ExpireDate)
 		newUser.Set("is_membership_active", areaUser.IsMembershipActive)
+		powerList := []string{}
 		if areaUser.IsATestMaker {
-			newUser.Set("powers", []string{"testmakers"})
+			powerList = append(powerList, "testmakers")
+		}
+		segretari := importers.RetrieveForwardedMail("segretari")
+		if slices.Contains(segretari, email) {
+			powerList = append(powerList, "events")
+		}
+		if len(powerList) > 0 {
+			newUser.Set("powers", powerList)
 		}
 
 		if err := app.Dao().SaveRecord(newUser); err != nil {
