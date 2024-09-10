@@ -58,6 +58,7 @@ func main() {
 	app.OnRecordAfterCreateRequest("addons").Add(GeneratePublicPrivateKeys)
 	app.OnRecordAfterCreateRequest("positions").Add(PositionSetState)
 	app.OnRecordAfterCreateRequest("calendar_link").Add(CalendarSetHash)
+	app.OnRecordAfterCreateRequest("events").Add(EventsNotifyUsers)
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
